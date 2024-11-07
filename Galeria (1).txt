@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Álbum de Fotos e Vídeos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
+        .container {
+            width: 90%;
+            margin: auto;
+            overflow: hidden;
+        }
+        .upload-section {
+            background-color: #fff;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+        input[type="file"], input[type="text"], textarea {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .gallery-item {
+            width: 30%;
+            margin-bottom: 20px;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .gallery-item img, .gallery-item video {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+        .gallery-item p {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Álbum de Fotos e Vídeos</h1>
+    </header>
+    
+    <div class="container">
+        <div class="upload-section">
+            <h2>Adicionar Foto, Vídeo ou Link</h2>
+            <form id="uploadForm">
+                <label for="fileUpload">Selecione Foto ou Vídeo:</label>
+                <input type="file" id="fileUpload" accept="image/*,video/*">
+                
+                <label for="caption">Adicione uma Legenda:</label>
+                <textarea id="caption" rows="3" placeholder="Escreva uma legenda..."></textarea>
+                
+                <label for="link">Adicione um Link (Opcional):</label>
+                <input type="text" id="link" placeholder="Cole o link aqui...">
+                
+                <button type="button" onclick="addToGallery()">Adicionar ao Álbum</button>
+            </form>
+        </div>
+
+        <div class="gallery" id="gallery">
+            <!-- Os itens do álbum aparecerão aqui -->
+        </div>
+    </div>
+
+    <script>
+        function addToGallery() {
+            const fileInput = document.getElementById('fileUpload');
+            const caption = document.getElementById('caption').value;
+            const link = document.getElementById('link').value;
+            const gallery = document.getElementById('gallery');
+            
+            const file = fileInput.files[0];
+            if (!file) {
+                alert("Por favor, selecione um arquivo.");
+                return;
+            }
+            
+            const galleryItem = document.createElement('div');
+            galleryItem.classList.add('gallery-item');
+
+            if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                galleryItem.appendChild(img);
+            } else if (file.type.startsWith('video/')) {
+                const video = document.createElement('video');
+                video.src = URL.createObjectURL(file);
+                video.controls = true;
+                galleryItem.appendChild(video);
+            }
+            
+            if (caption) {
+                const captionElement = document.createElement('p');
+                captionElement.textContent = caption;
+                galleryItem.appendChild(captionElement);
+            }
+
+            if (link) {
+                const linkElement = document.createElement('a');
+                linkElement.href = link;
+                linkElement.target = "_blank";
+                linkElement.textContent = "Ver mais";
+                galleryItem.appendChild(linkElement);
+            }
+
+            gallery.appendChild(galleryItem);
+        }
+    </script>
+</body>
+</html>

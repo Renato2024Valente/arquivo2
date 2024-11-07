@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galeria de Fotos com Legenda Protegida por Senha</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            background-color: #4267B2;
+            color: white;
+            padding: 20px;
+        }
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        .photo-card {
+            position: relative;
+            text-align: center;
+            margin: 10px;
+        }
+        .gallery img {
+            width: 200px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .gallery img.fullscreen {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(1.5);
+            z-index: 999;
+            width: 80%;
+            height: auto;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        .caption {
+            margin-top: 5px;
+            font-size: 16px;
+            color: #333;
+        }
+        .form-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .form-container input, .form-container button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Galeria de Fotos com Legenda Protegida por Senha</h1>
+    </div>
+
+    <div class="form-container">
+        <form id="photo-form">
+            <input type="file" id="photo" accept="image/*" multiple required>
+            <input type="password" id="password" placeholder="Senha" required>
+            <button type="submit">Adicionar Fotos</button>
+        </form>
+    </div>
+
+    <div class="gallery" id="photo-gallery">
+        <!-- Fotos e legendas serão exibidas aqui -->
+    </div>
+
+    <script>
+        const form = document.getElementById('photo-form');
+        const gallery = document.getElementById('photo-gallery');
+        const correctPassword = '1234'; // Senha para adicionar e apagar fotos
+
+        // Função para carregar fotos do localStorage ao iniciar a página
+        window.onload = function() {
+            const savedPhotos = JSON.parse(localStorage.getItem('photos')) || [];
+            savedPhotos.forEach(photo => {
+                displayPhoto(photo.src, photo.caption);
+            });
+        };
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const photoInput = document.getElementById('photo');
+            const passwordInput = document.getElementById('password').value;
+
+            if (passwordInput === correctPassword) {
+                const files = photoInput.files;
+                let photos = JSON.parse(localStorage.getItem('photos')) || [];
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const photoData = {
+                            src: e.target.result,
+                            caption: "Clique aqui para adicionar legenda"
+                        };
+                        photos.push(photoData);
+                        displayPhoto(photoData.src, photoData.caption);
+
+                        // Salvar a foto no localStorage
+                        localStorage.setItem('photos', JSON.stringify(photos));
+                    };
+                    reader.readAsDataURL(file);
+                }
+            } else {
+                alert('Senha incorreta!');
+            }
+        });
+
+        function displayPhoto(src, caption) {
+            const photoCard = document.createElement('div');
+            photoCard.classList.add('photo-card');
+            photoCard.innerHTML = `
+                <img src="${src}" alt="Foto" onclick="toggleFullScreen(this)">
+                <p class="caption">${caption}</p>
+                <button onclick="addCaption(this)">Editar Legenda</button>
+                <button onclick="deletePhoto(this)">Apagar Foto</button>
+            `;
+            gallery.appendChild(photoCard);
+        }
+
+        function addCaption(button) {
+            const password = prompt("Digite a senha para adicionar/editar a legenda:");
+            if (password === correctPassword) {
+                const caption = prompt("Digite a legenda:");
+                const captionElement = button.previousElementSibling;
+                captionElement.textContent = caption;
+
+                // Atualizar legenda no localStorage
+                updatePhotoInStorage(captionElement.previousElementSibling.src, caption);
+            } else {
+                alert('Senha incorreta!');
+            }
+        }
+
+        function deletePhoto(button) {
+            const password = prompt("Digite a senha para apagar a foto:");
+            if (password === correctPassword) {
+                const photoCard = button.parentElement;
+                photoCard.remove();
+
+                // Remover do localStorage
+                removePhotoFromStorage(photoCard.querySelector('img').src);
+            } else {
+                alert('Senha incorreta!');
+            }
+        }
+
+        function updatePhotoInStorage(src, newCaption) {
+            let photos = JSON.parse(localStorage.getItem('photos')) || [];
+            photos = photos.map(photo => {
+                if (photo.src === src) {
+                    return { src: photo.src, caption: newCaption };
+                }
+                return photo;
+            });
+            localStorage.setItem('photos', JSON.stringify(photos));
+        }
+
+        function removePhotoFromStorage(src) {
+            let photos = JSON.parse(localStorage.getItem('photos')) || [];
+            photos = photos.filter(photo => photo.src !== src);
+            localStorage.setItem('photos', JSON.stringify(photos));
+        }
+
+        function toggleFullScreen(image) {
+            if (image.classList.contains('fullscreen')) {
+                image.classList.remove('fullscreen');
+            } else {
+                image.classList.add('fullscreen');
+            }
+        }
+    </script>
+
+</body>
+</html>
